@@ -20,23 +20,23 @@ The goal is to build a data generator that produces not just random CDR/xDR reco
 
 ```mermaid
 graph TD
-    subgraph Stateful Core (The "Digital Twin")
+    subgraph Stateful_Core
         A[Subscriber Profile Database]
         B[Network Infrastructure Model]
     end
 
-    subgraph Dynamic Engine (The "Puppet Master")
+    subgraph Dynamic_Engine
         C[Scenario & Event Injector]
     end
 
-    subgraph Event Generators (The "Actors")
+    subgraph Event_Generators
         D[CDR/xDR Generator]
         E[Network Log Generator]
         F[Customer Service Log Generator]
         G[Location Update Generator]
     end
 
-    subgraph Streaming Platform
+    subgraph Streaming_Platform
         H[Apache Kafka]
         H1(Topic: cdrs)
         H2(Topic: network_logs)
@@ -44,7 +44,7 @@ graph TD
         H4(Topic: location_updates)
     end
 
-    subgraph Analytics Platform
+    subgraph Analytics_Platform
         I[Vast Data Database]
     end
 
@@ -69,6 +69,7 @@ graph TD
     H2 --> I
     H3 --> I
     H4 --> I
+```
 ```
 
 ---

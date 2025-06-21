@@ -18,7 +18,8 @@ fi
 
 # Build images
 docker build --build-arg CACHEBUST=$(date +%s) -t telco-generator:latest telco-generator
-docker build --build-arg CACHEBUST=$(date +%s) -t vast-db-connector:latest vast-db-connector
+docker build --build-arg CACHEBUST=$(date +%s) -t vast-db-sink:latest vast-db-sink
+docker build --build-arg CACHEBUST=$(date +%s) -t vast-init:latest vast-init
 
 # Wait for the network to be removed
 echo -n "Waiting for network telco_demo_default to be removed ."
@@ -28,3 +29,5 @@ while docker network inspect telco_demo_default >/dev/null 2>&1; do
 done
 
 docker stack deploy -c docker-stack.yml telco_demo
+
+echo " ✅ Stack telco_demo has been rebuilt and deployed successfully."

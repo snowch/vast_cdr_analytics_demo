@@ -4,7 +4,7 @@ import time
 import json
 import random
 from datetime import datetime, timedelta
-from kafka import KafkaProducer
+from confluent_kafka import Producer
 from state_manager import StateManager
 from scenario_engine import get_scenario_timeline
 from config import SIMULATION_START_TIME, TIME_DILATION_FACTOR
@@ -13,7 +13,7 @@ def generate_baseline_traffic(subscriber):
     """Generates normal, everyday traffic based on persona. (Simplified)"""
     if random.random() < 0.01:
         return {
-            "topic": "cdrs",
+            "topic": os.getenv("KAFKA_TOPIC_CDRS"),
             "payload": {
                 "recordOpeningTime": datetime.now(), "servedMSISDN": subscriber['msisdn'], 
                 "duration": 60, "causeForRecClosing": "normalRelease", "userLocationInformation": None,
@@ -32,11 +32,11 @@ def main():
     
     print(f"KAFKA_BROKER_URL: {KAFKA_BROKER_URL}")
     print(f"Connecting to {KAFKA_BROKER_URL} for partition {partition_id} ...")
-    
-    producer = KafkaProducer(
-        bootstrap_servers=KAFKA_BROKER_URL,
-        value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8')
-    )
+
+    conf = {
+        'bootstrap.servers': KAFKA_BROKER_URL,
+    }
+    producer = Producer(conf)
     state = StateManager(partition_id=partition_id, total_partitions=total_partitions)
 
     print(f"Kafka Producer connected to {KAFKA_BROKER_URL} for partition {partition_id}.")
@@ -54,12 +54,19 @@ def main():
     try:
         while True:
             # Check for and execute scheduled scenario events
+            def delivery_report(err, msg):
+                if err is not None:
+                    print(f'ERROR: Message failed delivery: {err}')
+                else:
+                    print(f"Message delivered to topic {msg.topic()} [{msg.partition()}]")
+
             for event in timeline:
                 if event["trigger_time"] <= current_sim_time < event["trigger_time"] + timedelta(minutes=1):
                     print(f"\n>>> [Partition {partition_id}] EXECUTING SCENARIO at {current_sim_time} <<<")
                     generated_records = event["action"](**event["params"], current_time=current_sim_time)
+
                     for record in generated_records:
-                        producer.send(record["topic"], record["payload"])
+                        producer.produce(record["topic"], value=json.dumps(record["payload"], default=str).encode('utf-8'), callback=delivery_report)
                     timeline.remove(event)
 
             # Generate baseline "background noise" traffic
@@ -67,7 +74,7 @@ def main():
                  if not subscriber.get('is_in_special_scenario', False):
                     record = generate_baseline_traffic(subscriber)
                     if record:
-                        producer.send(record["topic"], record["payload"])
+                        producer.produce(record["topic"], value=json.dumps(record["payload"], default=str).encode('utf-8'), callback=delivery_report)
 
             producer.flush()
             print(f"[Partition {partition_id}] Simulation time: {current_sim_time}", end='\r')
@@ -75,9 +82,6 @@ def main():
             current_sim_time += timedelta(minutes=1 * TIME_DILATION_FACTOR)
     except KeyboardInterrupt:
         print(f"\n[Partition {partition_id}] Shutting down...")
-    finally:
-        producer.close()
-        # state.close_session()
 
 if __name__ == "__main__":
     main()

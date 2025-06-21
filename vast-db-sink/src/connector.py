@@ -1,4 +1,4 @@
-# vast-db-connector/src/connector.py
+# vast-db-sink/src/connector.py
 import os
 import json
 import time
@@ -62,7 +62,10 @@ def write_batch_to_vast(session, topic, batch):
 
 def main():
     KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
-    KAFKA_TOPICS = os.getenv("KAFKA_TOPICS", "cdrs,network_logs,customer_service").split(',')
+    KAFKA_TOPIC_CDRS = os.getenv("KAFKA_TOPIC_CDRS")
+    KAFKA_TOPIC_NETWORK_LOGS = os.getenv("KAFKA_TOPIC_NETWORK_LOGS")
+    KAFKA_TOPIC_CUSTOMER_SERVICE = os.getenv("KAFKA_TOPIC_CUSTOMER_SERVICE")
+    KAFKA_TOPICS = [KAFKA_TOPIC_CDRS, KAFKA_TOPIC_NETWORK_LOGS, KAFKA_TOPIC_CUSTOMER_SERVICE]
     BATCH_SIZE = 1000
     BATCH_TIMEOUT_S = 5
 
@@ -79,9 +82,10 @@ def main():
         auto_offset_reset='earliest'
     )
     print(f"Connector initialized. Consuming from topics: {KAFKA_TOPICS}")
-    
-    message_batch = {topic: [] for topic in KAFKA_TOPICS}
-    last_write_time = {topic: time.time() for topic in KAFKA_TOPICS}
+
+    topics = [KAFKA_TOPIC_CDRS, KAFKA_TOPIC_NETWORK_LOGS, KAFKA_TOPIC_CUSTOMER_SERVICE]
+    message_batch = {topic: [] for topic in topics}
+    last_write_time = {topic: time.time() for topic in topics}
 
     try:
         for message in consumer:

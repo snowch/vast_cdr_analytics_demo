@@ -1,4 +1,4 @@
-# vast-db-connector/Dockerfile
+# vast-db-sink/Dockerfile
 FROM python:3.9-slim
 
 WORKDIR /app

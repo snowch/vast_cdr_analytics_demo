@@ -1,5 +1,6 @@
 # telco-generator/src/patterns.py
 import random
+import os
 from datetime import timedelta
 from config import COMPETITOR_PHONE_NUMBER
 
@@ -9,7 +10,7 @@ def generate_churn_warning_pattern(subscriber, current_time):
     events = []
 
     events.append({
-        "topic": "customer_service",
+        "topic": os.getenv("KAFKA_TOPIC_CUSTOMER_SERVICE"),
         "payload": {
             "msisdn": subscriber["msisdn"], "call_time": current_time,
             "duration": random.randint(120, 600), "call_reason": "BILLING_DISPUTE",
@@ -19,7 +20,7 @@ def generate_churn_warning_pattern(subscriber, current_time):
 
     call_to_competitor_time = current_time + timedelta(hours=3)
     events.append({
-        "topic": "cdrs",
+        "topic": os.getenv("KAFKA_TOPIC_CDRS"),
         "payload": {
             "recordOpeningTime": call_to_competitor_time, "servedMSISDN": subscriber["msisdn"],
             "callingNumber": subscriber["msisdn"], "calledNumber": COMPETITOR_PHONE_NUMBER,
@@ -35,7 +36,7 @@ def generate_network_congestion_pattern(tower_id, subscribers_on_tower, current_
     events = []
 
     events.append({
-        "topic": "network_logs",
+        "topic": os.getenv("KAFKA_TOPIC_NETWORK_LOGS"),
         "payload": {
             "timestamp": current_time, "tower_id": tower_id,
             "log_level": "WARNING", "message": f"CPU load at 95%. User capacity nearing maximum."
@@ -45,7 +46,7 @@ def generate_network_congestion_pattern(tower_id, subscribers_on_tower, current_
     for sub in subscribers_on_tower:
         if random.random() < 0.1:
             events.append({
-                "topic": "cdrs",
+                "topic": os.getenv("KAFKA_TOPIC_CDRS"),
                 "payload": {
                     "recordOpeningTime": (current_time + timedelta(minutes=random.randint(1,5))),
                     "servedMSISDN": sub["msisdn"], "duration": random.randint(10, 60),
@@ -64,7 +65,7 @@ def generate_sim_box_fraud_pattern(fraud_imsi_list, tower_id, current_time):
     for imsi in fraud_imsi_list:
         for i in range(5):
             events.append({
-                "topic": "cdrs",
+                "topic": os.getenv("KAFKA_TOPIC_CDRS"),
                 "payload": {
                     "recordOpeningTime": (current_time + timedelta(seconds=i*15)),
                     "servedIMSI": imsi, "servedIMEI": shared_imei,

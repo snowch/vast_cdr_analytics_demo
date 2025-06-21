@@ -1,8 +1,50 @@
-# docker-stack.yml
 version: '3.8'
 
 services:
-  # This is our intelligent, pattern-driven generator, now scalable.
+  # Initialize VAST DB and Kafka topics
+  vast-init-db:
+    image: vast-init:latest
+    build:
+      context: ./vast-init
+    env_file: .env
+    depends_on: []
+    environment:
+      - VASTDB_ENDPOINT=${VASTDB_ENDPOINT}
+      - VASTDB_ACCESS_KEY=${VASTDB_ACCESS_KEY}
+      - VASTDB_SECRET_KEY=${VASTDB_SECRET_KEY}
+      - VASTDB_BUCKET=${VASTDB_BUCKET}
+      - VASTDB_SCHEMA=${VASTDB_SCHEMA}
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL}
+    deploy:
+      mode: replicated-job
+      replicas: 1
+    command: >
+      bash -c "
+      python setup_vast_tables.py
+      "
+
+  vast-init-kafka:
+    image: vast-init:latest
+    build:
+      context: ./vast-init
+    env_file: .env
+    depends_on: []
+    environment:
+      - VASTDB_ENDPOINT=${VASTDB_ENDPOINT}
+      - VASTDB_ACCESS_KEY=${VASTDB_ACCESS_KEY}
+      - VASTDB_SECRET_KEY=${VASTDB_SECRET_KEY}
+      - VASTDB_BUCKET=${VASTDB_BUCKET}
+      - VASTDB_SCHEMA=${VASTDB_SCHEMA}
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL}
+    deploy:
+      mode: replicated-job
+      replicas: 1
+    command: >
+      bash -c "
+      python setup_vast_topics.py
+      "
+
+  # This is our intelligent, pattern-driven generator
   telco-generator:
     image: telco-generator:latest # Use a tagged image for stack deployments
     build:
@@ -23,12 +65,14 @@ services:
       # We use this to partition the subscribers.
       - GENERATOR_PARTITION_ID={{.Task.Slot}}
       - TOTAL_PARTITIONS=4 # Must match the number of replicas
+    depends_on:
+      - vast-init-kafka
 
   # This service's role is now purely to ingest high-volume analytical data.
-  vast-db-connector:
-    image: vast-db-connector:latest
+  vast-db-sink:
+    image: vast-db-sink:latest
     build:
-      context: ./vast-db-connector
+      context: ./vast-db-sink
     deploy:
       replicas: 2 # Scale this based on Kafka topic partitions
     env_file: .env # Load environment variables from .env file
@@ -40,4 +84,5 @@ services:
       - VASTDB_SECRET_KEY=${VASTDB_SECRET_KEY}
       - VASTDB_BUCKET=${VASTDB_BUCKET}
       - VASTDB_SCHEMA=${VASTDB_SCHEMA}
-      - KAFKA_TOPICS=cdrs,network_logs,customer_service
+    depends_on:
+      - vast-init-db

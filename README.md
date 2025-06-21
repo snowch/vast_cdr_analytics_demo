@@ -47,7 +47,7 @@ This one-time step creates the necessary tables (subscribers, cdrs, etc.) in you
 1.  Navigate to the script directory:
 
     ```bash
-    cd vast-db-init
+    cd vast-init
     ```
 2.  Create a Python virtual environment and install dependencies:
 
@@ -73,7 +73,7 @@ This command turns your Docker host into a Docker Swarm manager, allowing it to 
 
 ## Step 3.5: Build the Docker Images
 
-Before deploying the application stack, you need to build the Docker images for the `telco-generator` and `vast-db-connector` services.
+Before deploying the application stack, you need to build the Docker images for the `telco-generator` and `vast-db-sink` services.
 
 1.  Navigate to the project root directory:
 
@@ -85,7 +85,7 @@ Before deploying the application stack, you need to build the Docker images for 
 
     ```bash
     docker build -t telco-generator:latest telco-generator
-    docker build -t vast-db-connector:latest vast-db-connector
+    docker build -t vast-db-sink:latest vast-db-sink
     ```
 
 1.  From your primary machine (the "manager node"), run:
@@ -100,7 +100,7 @@ Before deploying the application stack, you need to build the Docker images for 
 
 ## Step 5: Build and Deploy the Application Stack
 
-Now you will deploy the `telco-generator` and `vast-db-connector` services to your Docker Swarm cluster.
+Now you will deploy the `telco-generator` and `vast-db-sink` services to your Docker Swarm cluster.
 
 1.  Make sure you are in the project's root directory (`telco-analytics-demo`).
 2.  Deploy the stack using the `docker-stack.yml` file:
@@ -112,7 +112,7 @@ Now you will deploy the `telco-generator` and `vast-db-connector` services to yo
     *   `-c docker-stack.yml`: Specifies the compose file to use.
     *   `telco_demo`: This is the name you are giving your stack. All services will be prefixed with this name.
 
-    Docker will start pulling the necessary base images, building your service images (`telco-generator:latest`, `vast-db-connector:latest`), and deploying the replicas. This may take a few minutes on the first run.
+    Docker will start pulling the necessary base images, building your service images (`telco-generator:latest`, `vast-db-sink:latest`), and deploying the replicas. This may take a few minutes on the first run.
 
 ## Step 6: Monitor and Verify the Application
 
@@ -124,7 +124,7 @@ Your application is now running. Here are the commands to see what's happening.
     docker service ls
     ```
 
-    You should see `telco_demo_telco-generator` and `telco_demo_vast-db-connector` with their replica counts (e.g., `4/4` and `2/2`).
+    You should see `telco_demo_telco-generator` and `telco_demo_vast-db-sink` with their replica counts (e.g., `4/4` and `2/2`).
 2.  Check the status of the individual generator containers:
 
     ```bash
@@ -138,8 +138,8 @@ Your application is now running. Here are the commands to see what's happening.
     # View the logs for the generator service
     docker service logs -f telco_demo_telco-generator
 
-    # View the logs for the VAST DB connector service
-    docker service logs -f telco_demo_vast-db-connector
+    # View the logs for the VAST DB sink service
+    docker service logs -f telco_demo_vast-db-sink
     ```
 
     *   The `-f` flag "follows" the log output.
@@ -173,3 +173,4 @@ When you are finished with the demo, you can remove all the running services wit
 
     ```bash
     docker swarm leave --force
+    ```

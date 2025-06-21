@@ -1,0 +1,6 @@
+kafka-python
+Faker
+vastdb
+pyarrow
+ibis-framework
+

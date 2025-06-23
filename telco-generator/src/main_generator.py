@@ -48,7 +48,7 @@ def main():
         'bootstrap.servers': KAFKA_BROKER_URL,
         'batch.size': 65536,  # Kafka producer batch size in bytes
         'linger.ms': 100,     # Wait up to 100ms to batch messages
-        'compression.type': 'snappy',  # Compress batches
+        'compression.type': 'none',  # Compress batches
         'request.timeout.ms': 30000,  # 30 second timeout for requests
         'delivery.timeout.ms': 60000,  # 60 second total delivery timeout
         'retry.backoff.ms': 1000,  # 1 second backoff between retries
@@ -60,7 +60,11 @@ def main():
         'reconnect.backoff.ms': 50,  # Start with 50ms reconnect backoff
         'reconnect.backoff.max.ms': 1000,  # Max 1 second reconnect backoff
     }
-    producer = Producer(conf)
+    try:
+        producer = Producer(conf)
+    except Exception as e:
+        raise RuntimeError(f"Failed to create Kafka producer: {e}")
+    
     state = StateManager(partition_id=partition_id, total_partitions=total_partitions)
 
     print(f"Kafka Producer connected to {KAFKA_BROKER_URL} for partition {partition_id}.")

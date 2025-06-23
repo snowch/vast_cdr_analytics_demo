@@ -10,11 +10,11 @@ from scenario_engine import get_scenario_timeline
 from config import SIMULATION_START_TIME, TIME_DILATION_FACTOR
 
 
-def generate_baseline_traffic(subscriber):
+def generate_baseline_traffic(subscriber, topic):
     """Generates normal, everyday traffic based on persona. (Simplified)"""
     if random.random() < 0.01:
         return {
-            "topic": os.getenv("KAFKA_TOPIC_CDRS"),
+            "topic": topic,
             "payload": {
                 "recordOpeningTime": datetime.now(), 
                 "servedMSISDN": subscriber['msisdn'], 
@@ -32,6 +32,10 @@ def main():
     KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
     if not KAFKA_BROKER_URL:
         raise ValueError("KAFKA_BROKER_URL environment variable must be set")
+    
+    KAFKA_TOPIC_CDRS = os.getenv("KAFKA_TOPIC_CDRS")
+    if not KAFKA_TOPIC_CDRS:
+        raise ValueError("KAFKA_TOPIC_CDRS environment variable must be set")
 
     partition_id = int(os.getenv("GENERATOR_PARTITION_ID", 1))
     total_partitions = int(os.getenv("TOTAL_PARTITIONS", 1))
@@ -109,7 +113,7 @@ def main():
             # Generate baseline "background noise" traffic
             for subscriber in my_subscribers:
                  if not subscriber.get('is_in_special_scenario', False):
-                    record = generate_baseline_traffic(subscriber)
+                    record = generate_baseline_traffic(subscriber, KAFKA_TOPIC_CDRS)
                     if record:
                         payload = json.dumps(record["payload"], default=str).encode('utf-8')
                         producer.produce(record["topic"], value=payload, callback=delivery_report)
@@ -126,7 +130,7 @@ def main():
                 producer.flush()
                 batch_count += 1
                 last_flush_time = current_time
-                print(f"\n[Partition {partition_id}] Batch #{batch_count} flushed: {current_batch_size} messages. Total delivered: {messages_delivered}")
+                print(f"\n[Partition {partition_id}] Batch #{batch_count} flushed: {current_batch_size} messages to topic {KAFKA_TOPIC_CDRS}. Total delivered: {messages_delivered}")
 
             print(f"[Partition {partition_id}] Simulation time: {current_sim_time}", end='\r')
             time.sleep(1)

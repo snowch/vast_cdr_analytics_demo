@@ -7,8 +7,7 @@ This document provides a step-by-step guide on how to run the entire application
 Before you begin, ensure you have the following installed and configured on your machine(s):
 
 -   **VAST Data 5.3+ Cluster:** You need a cluster running 5.3 or later.
--   **Docker & Docker Engine:** You need a modern version of Docker installed. The `docker-compose` command should also be available.
--   **Python:** You need Python (3.9 - 3.12) and pip installed on your main machine to run the one-off database initialization script.
+-   **Docker & Docker Engine:** You Docker Engine 23.0.0 or later.
 -   **Project Files:** You must have the complete project structure and all the files from the previous response.
 -   **VAST Cluster Access:** You must have network access to your VAST Cluster and the necessary credentials (Endpoint, Access Key, Secret Key).
 

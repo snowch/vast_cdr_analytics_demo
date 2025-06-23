@@ -9,17 +9,17 @@ from datetime import datetime
 
 # Define the Arrow schemas for our Kafka topics. This must match the VAST DB table schema.
 ARROW_SCHEMAS = {
-    "cdrs": pa.schema([
+    os.getenv("KAFKA_TOPIC_CDRS"): pa.schema([
         ('recordOpeningTime', pa.timestamp('ns')), ('servedMSISDN', pa.string()),
         ('duration', pa.int32()), ('causeForRecClosing', pa.string()),
         ('userLocationInformation', pa.string()), ('servedIMSI', pa.string()),
         ('servedIMEI', pa.string()), ('calledNumber', pa.string())
     ]),
-    "network_logs": pa.schema([
+    os.getenv("KAFKA_TOPIC_NETWORK_LOGS"): pa.schema([
         ('timestamp', pa.timestamp('ns')), ('tower_id', pa.string()),
         ('log_level', pa.string()), ('message', pa.string())
     ]),
-    "customer_service": pa.schema([
+    os.getenv("KAFKA_TOPIC_CUSTOMER_SERVICE"): pa.schema([
         ('msisdn', pa.string()), ('call_time', pa.timestamp('ns')),
         ('duration', pa.int32()), ('call_reason', pa.string()),
         ('resolution', pa.string()), ('agent_id', pa.string())
@@ -33,26 +33,37 @@ def write_batch_to_vast(session, topic, batch):
         
     print(f"Preparing batch of {len(batch)} records for topic '{topic}'...")
     try:
-        schema = ARROW_SCHEMAS.get(topic)
-        if not schema:
+        pa_schema = ARROW_SCHEMAS.get(topic)
+        if not pa_schema:
             print(f"WARN: No Arrow schema defined for topic '{topic}'. Skipping.")
             return
 
         # Convert string timestamps to datetime objects for PyArrow
         for record in batch:
-            for field in schema:
+            for field in pa_schema:
                 if pa.types.is_timestamp(field.type) and isinstance(record.get(field.name), str):
                     try:
                         record[field.name] = datetime.fromisoformat(record[field.name].replace('Z', '+00:00'))
                     except:
                         record[field.name] = None # Handle potential parsing errors
 
-        arrow_table = pa.Table.from_pylist(batch, schema=schema)
+        arrow_table = pa.Table.from_pylist(batch, schema=pa_schema)
 
         with session.transaction() as tx:
             bucket_name = os.getenv("VASTDB_BUCKET")
             schema_name = os.getenv("VASTDB_SCHEMA")
-            table = tx.bucket(bucket_name).schema(schema_name).table(topic)
+
+            bucket = tx.bucket(bucket_name)
+            schema = bucket.schema(schema_name, fail_if_missing=False)
+            if not schema_name:
+                print(f"Schema '{schema_name}' not found, creating...")
+                bucket.create_schema(schema_name)
+
+            table = schema.table(topic, fail_if_missing=False)
+            if not table:
+                print(f"Table '{topic}' not found in schema '{schema_name}', creating...")
+                table = schema.create_table(topic, pa_schema)
+
             table.insert(arrow_table)
         print(f"Successfully inserted batch of {len(batch)} records into table '{topic}'.")
 

@@ -2,17 +2,16 @@
 
 This document provides a step-by-step guide on how to run the entire application, from setting up the environment to deploying and monitoring the services on Docker Swarm.
 
-## Step 0: Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed and configured on your machine(s):
 
 -   **VAST Data 5.3+ Cluster:** You need a cluster running 5.3 or later.
--   **Docker & Docker Engine:** You need a modern version of Docker installed. The `docker-compose` command should also be available.
--   **Python:** You need Python (3.9 - 3.12) and pip installed on your main machine to run the one-off database initialization script.
+-   **Docker & Docker Engine:** You Docker Engine 23.0.0 or later.
 -   **Project Files:** You must have the complete project structure and all the files from the previous response.
 -   **VAST Cluster Access:** You must have network access to your VAST Cluster and the necessary credentials (Endpoint, Access Key, Secret Key).
 
-## Step 1: Configure Your Environment
+## Configure Your Environment
 
 The `.env` file is the central place for all your credentials.
 
@@ -40,38 +39,11 @@ The `.env` file is the central place for all your credentials.
     VASTDB_SCHEMA=YOUR_VASTDB_SCHEMA
     ```
 
-## Step 2: Initialize the VAST Database Schema
-
-This one-time step creates the necessary tables (subscribers, cdrs, etc.) in your VAST DB instance.
-
-1.  Navigate to the script directory:
-
-    ```bash
-    cd vast-init
-    ```
-2.  Create a Python virtual environment and install dependencies:
-
-    ```bash
-    # Create and activate a virtual environment (optional but recommended)
-    python3 -m venv venv
-    source venv/bin/activate
-
-    # Install required packages
-    pip install python-dotenv vastdb pyarrow
-    ```
-3.  Run the setup script:
-
-    ```bash
-    python3 setup_vast_tables.py
-    ```
-
-    You should see output confirming that it's connecting to VAST and creating the tables. Once this is done, you can deactivate the virtual environment (`deactivate`) and return to the project root directory (`cd ..`).
-
-## Step 3: Initialize the Docker Swarm Cluster
+## Initialize the Docker Swarm Cluster
 
 This command turns your Docker host into a Docker Swarm manager, allowing it to deploy and orchestrate services. You only need to do this once.
 
-## Step 3.5: Build the Docker Images
+## Build the Docker Images
 
 Before deploying the application stack, you need to build the Docker images for the `telco-generator` and `vast-db-sink` services.
 
@@ -98,7 +70,7 @@ Before deploying the application stack, you need to build the Docker images for 
 2.  For this demo, running on a single machine is perfectly fine. You can ignore the join token.
 3.  If you wanted to create a multi-node cluster, you would run the provided join command on your other machines to have them join the swarm as "worker nodes".
 
-## Step 5: Build and Deploy the Application Stack
+## Build and Deploy the Application Stack
 
 Now you will deploy the `telco-generator` and `vast-db-sink` services to your Docker Swarm cluster.
 
@@ -114,7 +86,7 @@ Now you will deploy the `telco-generator` and `vast-db-sink` services to your Do
 
     Docker will start pulling the necessary base images, building your service images (`telco-generator:latest`, `vast-db-sink:latest`), and deploying the replicas. This may take a few minutes on the first run.
 
-## Step 6: Monitor and Verify the Application
+## Monitor and Verify the Application
 
 Your application is now running. Here are the commands to see what's happening.
 
@@ -146,7 +118,7 @@ Your application is now running. Here are the commands to see what's happening.
     *   You should see logs from the generator like `[Partition 1] Starting up...`, `EXECUTING SCENARIO`, and the running simulation time.
     *   You should see logs from the connector like `Preparing batch...` and `Successfully inserted batch....`
 
-## Step 7: Scaling the Simulation
+## Scaling the Simulation
 
 To increase the data volume, you can scale the number of generator replicas on the fly.
 
@@ -160,7 +132,7 @@ To increase the data volume, you can scale the number of generator replicas on t
 
     Docker will automatically start 4 new generator containers. The new containers will be assigned partition IDs 5, 6, 7, and 8 and will start simulating their subset of subscribers, increasing the overall data volume.
 
-## Step 8: Tearing Down the Stack
+## Tearing Down the Stack
 
 When you are finished with the demo, you can remove all the running services with a single command.
 

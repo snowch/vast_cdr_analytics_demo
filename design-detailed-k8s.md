@@ -67,8 +67,8 @@ graph TD
 
                 subgraph Streaming_Platform_Components
                     Kafka_Operator[Kafka Operator]
-                    Kafka_Cluster[Kafka Cluster (Pods)]
-                    Kafka_Topics[Kafka Topics (Custom Resources)]
+                    Kafka_Cluster[Kafka Cluster]
+                    Kafka_Topics[Kafka Topics]
                 end
 
                 DEP_Scenario --> SVC_SubDB
@@ -92,7 +92,7 @@ graph TD
         NodeN --> Data_Generator_NS
     end
 
-    VAST_DB_Pod --> I[VAST Database (External/Internal)]
+    VAST_DB_Pod --> I[VAST Database]
 ```
 
 ---

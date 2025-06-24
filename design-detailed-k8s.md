@@ -66,7 +66,7 @@ graph TD
                 end
 
                 subgraph Streaming_Platform_Components
-                    Kafka_Operator[Kafka Operator (e.g., Strimzi)]
+                    Kafka_Operator[Kafka Operator]
                     Kafka_Cluster[Kafka Cluster (Pods)]
                     Kafka_Topics[Kafka Topics (Custom Resources)]
                 end

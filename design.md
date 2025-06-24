@@ -37,7 +37,7 @@ graph TD
     end
 
     subgraph Streaming_Platform
-        H[Apache Kafka]
+        H[VAST Kafka]
         H1(Topic: cdrs)
         H2(Topic: network_logs)
         H3(Topic: customer_service)
@@ -45,7 +45,7 @@ graph TD
     end
 
     subgraph Analytics_Platform
-        I[Vast Data Database]
+        I[VAST Data Database]
     end
 
     C --Triggers--> D

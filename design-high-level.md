@@ -45,7 +45,7 @@ graph TD
     end
 
     subgraph Analytics_Platform
-        I[Vast Data Database]
+        I[VAST Database]
     end
 
     C --Triggers--> D
@@ -69,7 +69,6 @@ graph TD
     H2 --> I
     H3 --> I
     H4 --> I
-```
 ```
 
 ---

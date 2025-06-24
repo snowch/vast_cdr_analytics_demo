@@ -45,7 +45,7 @@ graph TD
     end
 
     subgraph Analytics_Platform
-        I[VAST Data Database]
+        I[VAST Database]
     end
 
     C --Triggers--> D
@@ -89,7 +89,7 @@ graph TD
 - **Location Update Generator:** Simulates subscriber/device movement between towers.
 
 ### 4. **Streaming Platform**
-- **Apache Kafka:** Message bus. Each data type goes to a dedicated topic (e.g., cdrs, network_logs), decoupling producers from consumers.
+- **VAST Kafka:** Message bus. Each data type goes to a dedicated topic (e.g., cdrs, network_logs), decoupling producers from consumers.
 
 ---
 

@@ -1,3 +1,0 @@
-vastdb
-pyarrow
-confluent-kafka

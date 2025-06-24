@@ -1,5 +1,0 @@
-confluent-kafka
-Faker
-vastdb
-pyarrow
-ibis-framework

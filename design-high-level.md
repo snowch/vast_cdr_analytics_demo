@@ -37,7 +37,7 @@ graph TD
     end
 
     subgraph Streaming_Platform
-        H[Apache Kafka]
+        H[VAST Kafka]
         H1(Topic: cdrs)
         H2(Topic: network_logs)
         H3(Topic: customer_service)
@@ -90,7 +90,7 @@ graph TD
 - **Location Update Generator:** Simulates subscriber/device movement between towers.
 
 ### 4. **Streaming Platform**
-- **Apache Kafka:** Message bus. Each data type goes to a dedicated topic (e.g., cdrs, network_logs), decoupling producers from consumers.
+- **VAST Kafka:** Message bus. Each data type goes to a dedicated topic (e.g., cdrs, network_logs), decoupling producers from consumers.
 
 ---
 
@@ -112,9 +112,9 @@ graph TD
 
 - **Tech Stack:**
   - Generators: Python (with Faker, scenario logic)
-  - Stateful Core: Redis (dynamic state), PostgreSQL (persistent profiles)
+  - Stateful Core: VAST Ddatabase for dynamic state and persistent profiles
   - Orchestration: Docker, Kubernetes (for scaling microservices)
-  - Streaming: Apache Kafka
+  - Streaming: VAST Kafka
 - **Scalability:** Microservices allow independent scaling. Kafka ensures high throughput and durability.
 
 ---

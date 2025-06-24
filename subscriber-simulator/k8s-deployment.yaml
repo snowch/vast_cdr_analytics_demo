@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriber-simulator
+  labels:
+    app: subscriber-simulator
+spec:
+  replicas: 1 # Start with 1 replica, can be scaled up
+  selector:
+    matchLabels:
+      app: subscriber-simulator
+  template:
+    metadata:
+      labels:
+        app: subscriber-simulator
+    spec:
+      containers:
+      - name: subscriber-simulator
+        image: your_docker_registry_url/subscriber-simulator:latest # This image will be pulled from your Docker registry
+        imagePullPolicy: Always # Ensure Kubernetes always pulls the latest image
+        ports:
+        - containerPort: 8000
+        env:
+        - name: VASTDB_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: vastdb-secrets
+              key: VASTDB_ENDPOINT
+        - name: VASTDB_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vastdb-secrets
+              key: VASTDB_ACCESS_KEY
+        - name: VASTDB_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vastdb-secrets
+              key: VASTDB_SECRET_KEY
+        # Optional: Define resource limits and requests for scalability
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
